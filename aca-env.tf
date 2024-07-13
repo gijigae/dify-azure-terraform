@@ -14,8 +14,9 @@ resource "azurerm_container_app_environment" "dify-aca-env" {
   log_analytics_workspace_id = azurerm_log_analytics_workspace.aca-loga.id
   infrastructure_subnet_id = azurerm_subnet.acasubnet.id
   workload_profile  {
-    name = "Consumption"
-    workload_profile_type = "Consumption"
+    name = "Dedicated-D8"
+    workload_profile_type = "D8"
+    maximum_count = 6
   }
 
   depends_on = [ 
@@ -34,13 +35,6 @@ resource "azurerm_container_app_environment_storage" "nginxfileshare" {
   access_mode                  = "ReadWrite"
 }
 
-resource "azurerm_container_app_environment_certificate" "difycerts" {
-  name                         = "difycerts"
-  container_app_environment_id = azurerm_container_app_environment.dify-aca-env.id
-  certificate_blob_base64 = filebase64(var.aca-cert-path)
-  certificate_password = var.aca-cert-password
-}
-
 resource "azurerm_container_app" "nginx" {
   name                         = "nginx"
   container_app_environment_id = azurerm_container_app_environment.dify-aca-env.id
@@ -53,7 +47,7 @@ resource "azurerm_container_app" "nginx" {
       concurrent_requests = "10"
     }
     max_replicas = 10
-    min_replicas = 0
+    min_replicas = 2
     container {
       name   = "nginx"
       image  = "nginx:latest"
@@ -80,11 +74,7 @@ resource "azurerm_container_app" "nginx" {
       latest_revision = true
     }
     transport = "auto"
-    
-    custom_domain {
-      name = var.aca-dify-customer-domain
-      certificate_id = azurerm_container_app_environment_certificate.difycerts.id
-    }
+
   }
 }
 
@@ -110,7 +100,7 @@ resource "azurerm_container_app" "ssrfproxy" {
       concurrent_requests = "10"
     }
     max_replicas = 10
-    min_replicas = 0
+    min_replicas = 2
     container {
       name   = "ssrfproxy"
       image  = "ubuntu/squid:latest"
@@ -163,7 +153,7 @@ resource "azurerm_container_app" "sandbox" {
       concurrent_requests = "10"
     }
     max_replicas = 10
-    min_replicas = 0
+    min_replicas = 2
     container {
       name   = "langgenius"
       image  = var.dify-sandbox-image
@@ -236,7 +226,7 @@ resource "azurerm_container_app" "worker" {
       concurrent_requests = "10"
     }
     max_replicas = 10
-    min_replicas = 1
+    min_replicas = 2
     container {
       name   = "langgenius"
       image  = var.dify-api-image
@@ -372,7 +362,7 @@ resource "azurerm_container_app" "api" {
       concurrent_requests = "10"
     }
     max_replicas = 10
-    min_replicas = 0
+    min_replicas = 2
     container {
       name   = "langgenius"
       image  = var.dify-api-image
@@ -597,16 +587,6 @@ resource "azurerm_container_app" "api" {
       }
 
       env {
-        name  = "SSRF_PROXY_HTTP_URL"
-        value = "http://ssrfproxy:3128"
-      }
-
-      env {
-        name  = "SSRF_PROXY_HTTPS_URL"
-        value = "http://ssrfproxy:3128"
-      }
-
-      env {
         name  = "INDEXING_MAX_SEGMENTATION_TOKENS_LENGTH"
         value = "1000"
       }
@@ -639,10 +619,10 @@ resource "azurerm_container_app" "web" {
       concurrent_requests = "10"
     }
     max_replicas = 10
-    min_replicas = 0
+    min_replicas = 2
     container {
-      name   = "langgenius"
-      image  = "langgenius/dify-web:0.6.11"
+      name   = "choi-web"
+      image  = "gijigae/choi-web:0.6.13"
       cpu    = 1
       memory = "2Gi"
        env {

@@ -1,6 +1,6 @@
 variable "subscription-id" {
   type = string
-  default = "0000000000000"
+  default = "xxx"
 }
 
 #virtual network variables
@@ -17,7 +17,7 @@ variable "ip-prefix" {
 
 variable "storage-account" {
   type = string
-  default = "acadifytest"
+  default = "acadifytest4"
 }
 
 variable "storage-account-container" {
@@ -27,12 +27,12 @@ variable "storage-account-container" {
 
 variable "redis" {
   type = string
-  default = "acadifyredis"
+  default = "acadifyredis4"
 }
 
 variable "psql-flexible" {
   type = string
-  default = "acadifypsql"
+  default = "acadifypsql4"
 }
 
 variable "pgsql-user" {
@@ -55,24 +55,9 @@ variable "aca-loga" {
   default = "dify-loga"
 }
 
-variable "aca-cert-path" {
-  type = string
-  default = "./certs/difycert.pfx"
-}
-
-variable "aca-cert-password" {
-  type = string
-  default = "password"
-}
-
-variable "aca-dify-customer-domain" {
-  type = string
-  default = "dify.nikadwang.com"
-}
-
 variable "dify-api-image" {
   type = string
-  default = "langgenius/dify-api:0.6.11"
+  default = "langgenius/dify-api:0.6.13"
 }
 
 variable "dify-sandbox-image" {
