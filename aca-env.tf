@@ -57,6 +57,10 @@ resource "azurerm_container_app" "nginx" {
         name = "nginxconf"
         path = "/etc/nginx"
       }
+      env {
+        name = "NGINX_CLIENT_MAX_BODY_SIZE"
+        value = "60M"
+      }
     }
     volume {
       name = "nginxconf"
@@ -344,7 +348,42 @@ resource "azurerm_container_app" "worker" {
 
       env {
         name  = "INDEXING_MAX_SEGMENTATION_TOKENS_LENGTH"
-        value = "1000"
+        value = "5000"
+      }
+
+      env {
+        name  = "ETL_TYPE"
+        value = "Unstructured"
+      }
+
+      env {
+        name  = "UNSTRUCTURED_API_URL"
+        value = "http://unstructured:8000/general/v0/general"
+      }
+
+      env {
+        name = "MAIL_TYPE"
+        value = "resend"
+      }
+
+      env {
+        name = "RESEND_API_URL"
+        value = "https://api.resend.com"
+      }
+
+      env {
+        name = "MAIL_DEFAULT_SEND_FROM"
+        value = "Choimirai Company <info@choimirai.com>"
+      }
+
+      env {
+        name = "RESEND_API_KEY"
+        value = "rrr"
+      }
+
+      env {
+        name  = "CONSOLE_WEB_URL"
+        value = "https://choibu.com"
       }
     }
   }
@@ -588,7 +627,42 @@ resource "azurerm_container_app" "api" {
 
       env {
         name  = "INDEXING_MAX_SEGMENTATION_TOKENS_LENGTH"
-        value = "1000"
+        value = "5000"
+      }
+
+      env {
+        name  = "ETL_TYPE"
+        value = "Unstructured"
+      }
+
+      env {
+        name  = "UNSTRUCTURED_API_URL"
+        value = "http://unstructured:8000/general/v0/general"
+      }
+
+      env {
+        name = "MAIL_TYPE"
+        value = "resend"
+      }
+
+      env {
+        name = "RESEND_API_URL"
+        value = "https://api.resend.com"
+      }
+
+      env {
+        name = "MAIL_DEFAULT_SEND_FROM"
+        value = "Choimirai Company <info@choimirai.com>"
+      }
+
+      env {
+        name = "RESEND_API_KEY"
+        value = "rrr"
+      }
+
+      env {
+        name = "UPLOAD_FILE_SIZE_LIMIT"
+        value = "60"
       }
 
     }
@@ -653,4 +727,36 @@ resource "azurerm_container_app" "web" {
       }
       transport = "tcp"
     }
+}
+
+resource "azurerm_container_app" "unstructured" {
+  name                         = "unstructured"
+  container_app_environment_id = azurerm_container_app_environment.dify-aca-env.id
+  resource_group_name          = azurerm_resource_group.rg.name
+  revision_mode                = "Single"
+
+  template {
+    tcp_scale_rule {
+      name = "unstructured"
+      concurrent_requests = "10"
+    }
+    max_replicas = 10
+    min_replicas = 1
+    container {
+      name   = "unstructured"
+      image  = "downloads.unstructured.io/unstructured-io/unstructured-api:latest"
+      cpu    = 2
+      memory = "4Gi"
+    }
+  }
+
+  ingress {
+    target_port = 8000
+    external_enabled = false
+    traffic_weight {
+      percentage = 100
+      latest_revision = true
+    }
+    transport = "tcp"
+  }
 }
